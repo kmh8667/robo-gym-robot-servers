@@ -11,11 +11,15 @@ import copy
 from threading import Event
 from robo_gym_server_modules.robot_server.grpc_msgs.python import robot_server_pb2
 import numpy as np
+import tf
+import geometry_msgs.msg
+from tf.transformations import euler_from_quaternion, quaternion_from_euler
+
 class UrRosBridge:
 
-    def __init__(self, real_robot=False, ur_model= 'ur10'):
+    def __init__(self, real_robot=False, ur_model= 'ur3'):
 
-        # Event is clear while initialization or set_state is going on
+        # Event is clear while initialization or set_state is going o
         self.reset = Event()
         self.reset.clear()
         self.get_state_event = Event()
@@ -39,10 +43,6 @@ class UrRosBridge:
         self.min_traj_duration = 0.5 # minimum trajectory duration (s)
         self.joint_velocity_limits = self._get_joint_velocity_limits()
 
-        # Robot frames
-        self.reference_frame = rospy.get_param("~reference_frame", "base")
-        self.ee_frame = 'tool0'
-
         # TF2
         self.tf2_buffer = tf2_ros.Buffer()
         self.tf2_listener = tf2_ros.TransformListener(self.tf2_buffer)
@@ -56,8 +56,17 @@ class UrRosBridge:
             rospy.Subscriber("wrist_1_collision", ContactsState, self._on_wrist_1_collision)
             rospy.Subscriber("wrist_2_collision", ContactsState, self._on_wrist_2_collision)
             rospy.Subscriber("wrist_3_collision", ContactsState, self._on_wrist_3_collision)
+            rospy.Subscriber("gripper_link_collision", ContactsState, self._on_gripper_collision)
+            rospy.Subscriber("grip_point_collision", ContactsState, self._on_grippoint_collision)
         # Initialization of collision sensor flags
-        self.collision_sensors = dict.fromkeys(["shoulder", "upper_arm", "forearm", "wrist_1", "wrist_2", "wrist_3"], False)
+        self.collision_sensors = dict.fromkeys(["shoulder", "upper_arm", "forearm", "wrist_1", "wrist_2", "wrist_3", "gripper"], False)
+        
+        # Initialization of contact sensor flags
+        self.contact_sensors = dict.fromkeys(["grip_point"], False)
+
+        # Robot frames
+        self.reference_frame = rospy.get_param("~reference_frame", "base")
+        self.ee_frame = 'grip_point'
 
         # Robot Server mode
         rs_mode = rospy.get_param('~rs_mode')
@@ -108,12 +117,18 @@ class UrRosBridge:
             ee_to_ref_trans = self.tf2_buffer.lookup_transform(self.reference_frame, self.ee_frame, rospy.Time(0))
             ee_to_ref_trans_list = self._transform_to_list(ee_to_ref_trans)
             state += ee_to_ref_trans_list
-            state_dict.update(self._get_transform_dict(ee_to_ref_trans, 'ee_to_ref'))
+            state_dict.update(self._get_transform_dict(ee_to_ref_trans_list, 'ee_to_ref'))
         
             # Collision sensors
             ur_collision = any(self.collision_sensors.values())
             state += [ur_collision]
             state_dict['in_collision'] = float(ur_collision)
+
+            # contact sensors
+            # grip_contact = any(self.contact_sensors.value())
+            # state += [grip_contact]
+            # state_dict['grip_contact'] = float(grip_contact)
+
 
         elif self.rs_mode == '1object':
             # Object 0 Pose 
@@ -135,78 +150,29 @@ class UrRosBridge:
             state += ee_to_ref_trans_list
             state_dict.update(self._get_transform_dict(ee_to_ref_trans, 'ee_to_ref'))
         
-            # Collision sensors
-            ur_collision = any(self.collision_sensors.values())
-            state += [ur_collision]
-            state_dict['in_collision'] = float(ur_collision)
-
-        elif self.rs_mode == '1moving2points':
-            # Object 0 Pose 
-            object_0_trans = self.tf2_buffer.lookup_transform(self.reference_frame, self.objects_frame[0], rospy.Time(0))
-            object_0_trans_list = self._transform_to_list(object_0_trans)
-            state += object_0_trans_list
-            state_dict.update(self._get_transform_dict(object_0_trans, 'object_0_to_ref'))
+            # ee to object transform
+            ee_to_object_trans = self.tf2_buffer.lookup_transform(self.ee_frame, self.objects_frame[0], rospy.Time(0))
+            ee_to_object_trans_list = self._transform_to_list(ee_to_object_trans)
+            state += ee_to_object_trans_list
+            state_dict.update(self._get_transform_dict(ee_to_object_trans, 'ee_to_object'))
             
-            # Joint Positions and Joint Velocities
-            joint_position = copy.deepcopy(self.joint_position)
-            joint_velocity = copy.deepcopy(self.joint_velocity)
-            state += self._get_joint_ordered_value_list(joint_position)
-            state += self._get_joint_ordered_value_list(joint_velocity)
-            state_dict.update(self._get_joint_states_dict(joint_position, joint_velocity))
-
-            # ee to ref transform
-            ee_to_ref_trans = self.tf2_buffer.lookup_transform(self.reference_frame, self.ee_frame, rospy.Time(0))
-            ee_to_ref_trans_list = self._transform_to_list(ee_to_ref_trans)
-            state += ee_to_ref_trans_list
-            state_dict.update(self._get_transform_dict(ee_to_ref_trans, 'ee_to_ref'))
-        
-            # Collision sensors
-            ur_collision = any(self.collision_sensors.values())
-            state += [ur_collision]
-            state_dict['in_collision'] = float(ur_collision)
-
-            # forearm to ref transform
-            forearm_to_ref_trans = self.tf2_buffer.lookup_transform(self.reference_frame, 'forearm_link', rospy.Time(0))
-            forearm_to_ref_trans_list = self._transform_to_list(forearm_to_ref_trans)
-            state += forearm_to_ref_trans_list
-            state_dict.update(self._get_transform_dict(forearm_to_ref_trans, 'forearm_to_ref'))
-        
-        elif self.rs_mode == '2objects2points':
-            # Object 0 Pose 
-            object_0_trans = self.tf2_buffer.lookup_transform(self.reference_frame, self.objects_frame[0], rospy.Time(0))
-            object_0_trans_list = self._transform_to_list(object_0_trans)
-            state += object_0_trans_list
-            state_dict.update(self._get_transform_dict(object_0_trans, 'object_0_to_ref'))
-
-            # Object 1 Pose 
-            object_1_trans = self.tf2_buffer.lookup_transform(self.reference_frame, self.objects_frame[1], rospy.Time(0))
-            object_1_trans_list = self._transform_to_list(object_1_trans)
-            state += object_1_trans_list
-            state_dict.update(self._get_transform_dict(object_1_trans, 'object_1_to_ref'))
+            # ee to object rotation transform
+            ee_to_object_euler_list = self._get_rotation(ee_to_object_trans)
+            state += ee_to_object_euler_list
+            state_dict['ee_to_object_euler_rotation_r'] = ee_to_object_euler_list[0]
+            state_dict['ee_to_object_euler_rotation_p'] = ee_to_object_euler_list[1]
+            state_dict['ee_to_object_euler_rotation_y'] = ee_to_object_euler_list[2]
             
-            # Joint Positions and Joint Velocities
-            joint_position = copy.deepcopy(self.joint_position)
-            joint_velocity = copy.deepcopy(self.joint_velocity)
-            state += self._get_joint_ordered_value_list(joint_position)
-            state += self._get_joint_ordered_value_list(joint_velocity)
-            state_dict.update(self._get_joint_states_dict(joint_position, joint_velocity))
 
-            # ee to ref transform
-            ee_to_ref_trans = self.tf2_buffer.lookup_transform(self.reference_frame, self.ee_frame, rospy.Time(0))
-            ee_to_ref_trans_list = self._transform_to_list(ee_to_ref_trans)
-            state += ee_to_ref_trans_list
-            state_dict.update(self._get_transform_dict(ee_to_ref_trans, 'ee_to_ref'))
-        
             # Collision sensors
             ur_collision = any(self.collision_sensors.values())
             state += [ur_collision]
             state_dict['in_collision'] = float(ur_collision)
 
-            # forearm to ref transform
-            forearm_to_ref_trans = self.tf2_buffer.lookup_transform(self.reference_frame, 'forearm_link', rospy.Time(0))
-            forearm_to_ref_trans_list = self._transform_to_list(forearm_to_ref_trans)
-            state += forearm_to_ref_trans_list
-            state_dict.update(self._get_transform_dict(forearm_to_ref_trans, 'forearm_to_ref'))
+            # contact sensors
+            gripable = any(self.contact_sensors.values())
+            state += [gripable]
+            state_dict['gripable'] = float(gripable)
 
         else: 
             raise ValueError
@@ -219,7 +185,7 @@ class UrRosBridge:
         return msg
 
     def set_state(self, state_msg):
-       
+
         if all (j in state_msg.state_dict for j in ('base_joint_position','shoulder_joint_position', 'elbow_joint_position', \
                                                      'wrist_1_joint_position', 'wrist_2_joint_position', 'wrist_3_joint_position')):
             state_dict = True
@@ -228,6 +194,9 @@ class UrRosBridge:
 
         # Clear reset Event
         self.reset.clear()
+
+
+        # Set target internal value
 
         # Setup Objects movement
         if self.objects_controller:
@@ -254,7 +223,10 @@ class UrRosBridge:
         
         if not self.real_robot:
             # Reset collision sensors flags
-            self.collision_sensors.update(dict.fromkeys(["shoulder", "upper_arm", "forearm", "wrist_1", "wrist_2", "wrist_3"], False))
+            self.collision_sensors.update(dict.fromkeys(["shoulder", "upper_arm", "forearm", "wrist_1", "wrist_2", "wrist_3", "gripper"], False))
+            # Reset contact sensors flags
+            self.contact_sensors.update(dict.fromkeys(["grip_point"], False))
+
         # Start movement of objects
         if self.objects_controller:
             msg = Bool()
@@ -375,6 +347,18 @@ class UrRosBridge:
             pass
         else:
             self.collision_sensors["wrist_3"] = True
+            
+    def _on_gripper_collision(self, data):
+        if data.states == []:
+            pass
+        else:
+            self.collision_sensors["gripper"] = True
+
+    def _on_grippoint_collision(self, data):
+        if data.states == []:
+            pass
+        else:
+            self.contact_sensors["grip_point"] = True
 
     def _on_occupancy_state(self, msg):
         if self.get_state_event.is_set():
@@ -440,4 +424,86 @@ class UrRosBridge:
             raise ValueError('ur_model not recognized')
 
         return {name: self.max_velocity_scale_factor * absolute_joint_velocity_limits[name] for name in self.joint_names}
+
+    def publish_target_marker(self, target_pose):
+        # Publish Target RViz Marker
+        t_marker = Marker()
+        t_marker.type = 2  # =>SPHERE
+        t_marker.scale.x = 0.3
+        t_marker.scale.y = 0.3
+        t_marker.scale.z = 0.3
+        t_marker.action = 0
+        t_marker.frame_locked = 1
+        t_marker.pose.position.x = target_pose[0]
+        t_marker.pose.position.y = target_pose[1]
+        t_marker.pose.position.z = 0.0
+        rpy_orientation = PyKDL.Rotation.RPY(0.0, 0.0, target_pose[2])
+        q_orientation = rpy_orientation.GetQuaternion()
+        t_marker.pose.orientation.x = q_orientation[0]
+        t_marker.pose.orientation.y = q_orientation[1]
+        t_marker.pose.orientation.z = q_orientation[2]
+        t_marker.pose.orientation.w = q_orientation[3]
+        t_marker.id = 0
+        t_marker.header.stamp = rospy.Time.now()
+        t_marker.header.frame_id = self.path_frame
+        t_marker.color.a = 1.0
+        t_marker.color.r = 0.0  # red
+        t_marker.color.g = 1.0
+        t_marker.color.b = 0.0
+        self.target_pub.publish(t_marker)
+
+    def set_model_state(self, model_name, state):
+
+
+        # Set Gazebo Model State
+        rospy.wait_for_service('/gazebo/set_model_state')
+
+        start_state = ModelState()
+        start_state.model_name = model_name
+        start_state.pose.position.x = state[0]
+        start_state.pose.position.y = state[1]
+        orientation = PyKDL.Rotation.RPY(0,0, state[2])
+        start_state.pose.orientation.x, start_state.pose.orientation.y, start_state.pose.orientation.z, start_state.pose.orientation.w = orientation.GetQuaternion()
+
+        start_state.twist.linear.x = 0.0
+        start_state.twist.linear.y = 0.0
+        start_state.twist.linear.z = 0.0
+        start_state.twist.angular.x = 0.0
+        start_state.twist.angular.y = 0.0
+        start_state.twist.angular.z = 0.0
+
+        try:
+            set_model_state_client = rospy.ServiceProxy('/gazebo/set_model_state/', SetModelState)
+            set_model_state_client(start_state)
+        except rospy.ServiceException as e:
+            print("Service call failed:" + e)
+
+    def _get_rotation (self,transform):
         
+        quaternion = (transform.transform.rotation.x, transform.transform.rotation.y, \
+                    transform.transform.rotation.z, transform.transform.rotation.w)
+
+        euler = list(euler_from_quaternion(quaternion))
+        # euler_rotation = np.array(euler)
+
+        return euler
+
+    def _get_rotation_dict(self, trans_angle_list, transform_name):
+        d[transform_name + 'euler_rotation_x'] = trans_angle_list[0]
+        d[transform_name + 'euler_rotation_y'] = trans_angle_list[1]
+        d[transform_name + 'euler_rotation_z'] = trans_angle_list[2]
+
+    # def object_pose_publisher():
+    #     rospy.init_node('object_pose_pub')
+    #     pub = rospy.Publisher('object_pose', geometry_msgs.msg.Pose(), queue_size=10)
+    #     r = rospy.Rate(50.0)
+
+    #     while not rospy.is_shutdown():
+    #         try:
+    #             (trans,rot) = listener.lookupTransform('/camera_link', '/bottle', rospy.Time(0))
+
+    #         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+    #             continue
+
+    #         pub.publish(trans,rot)
+    #         r.sleep()

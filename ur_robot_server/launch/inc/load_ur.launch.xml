@@ -32,8 +32,8 @@
 
   <!-- Robot Base position -->
   <arg name="x" default="0.0" doc="base_link coordinate with respect to the world frame"/>
-  <arg name="y" default="0.0" doc="base_link coordinate with respect to the world frame"/>
-  <arg name="z" default="0.1" doc="base_link coordinate with respect to the world frame"/>
+  <arg name="y" default="-0.0" doc="base_link coordinate with respect to the world frame"/>
+  <arg name="z" default="3.1" doc="base_link coordinate with respect to the world frame"/>
   <arg name="roll" default="0.0" doc="base_link coordinate with respect to the world frame"/>
   <arg name="pitch" default="0.0" doc="base_link coordinate with respect to the world frame"/>
   <arg name="yaw" default="0.0" doc="base_link coordinate with respect to the world frame"/>
@@ -47,7 +47,7 @@
   <arg name="camera1_link_pitch" default="0.0" doc="camera1_link coordinate with respect to the world frame"/>
   <arg name="camera1_link_yaw" default="0.0" doc="camera1_link coordinate with respect to the world frame"/>
 
-  <param name="robot_description" command="$(find xacro)/xacro '$(find ur_robot_server)/urdf/ur.xacro'
+  <param name="robot_description" command="$(find xacro)/xacro '$(find ur_robot_server)/urdf/ur3_robot_hri_hand.urdf.xacro'
     joint_limit_params:=$(arg joint_limit_params)
     kinematics_params:=$(arg kinematics_params)
     physical_params:=$(arg physical_params)

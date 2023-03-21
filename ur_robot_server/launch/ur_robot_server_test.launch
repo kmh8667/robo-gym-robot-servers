@@ -5,19 +5,19 @@
   <arg name="gui" default="true" />
   <arg name="rviz_gui" default="true" />
   <arg name="gazebo_gui" default="true" />
-  <arg name="world_name" default="hri_hand_v2.world"/>
+  <arg name="world_name" default="test_w.world"/>
   <arg name="max_velocity_scale_factor" default="1.0" doc="Scale factor multplied by maximum joint velocity value"/>
   <arg name="server_port" default ="50051"/>
-  <arg name="action_cycle_rate" default="125" doc="Rate at which new commands are published to the robot controller"/>
+  <arg name="action_cycle_rate" default="25" doc="Rate at which new commands are published to the robot controller"/>
   <arg name="reference_frame" default="base"  doc="Reference frame with respect to which target and ee pose are given"/>
   <arg name="target_mode" default="only_robot"  doc="DEPRECATED"/>
-  <arg name="rs_mode"  default="1object" doc="Defines the working mode of the Robot Server, this influences the RS state content"/>
+  <arg name="rs_mode"  default="false" doc="Defines the working mode of the Robot Server, this influences the RS state content"/>
   <arg name="action_mode"  default="abs_pos" doc="Defines the action mode of the Robot Server, this influences the command sent to the robot"/>
   <arg name="use_voxel_occupancy" default="false" doc="use voxel occupancy in state"/>
 
   <!-- Scene Objects -->
   <arg name="objects_controller" default="false"  doc="Start objects controller node"/>
-  <arg name="n_objects" default="1.0"  doc="Number of objects in the scene"/>
+  <arg name="n_objects" default="0.0"  doc="Number of objects in the scene"/>
   <arg name="object_trajectory_file_name" default="no_file" doc="Object trajectory file name"/>
   <arg name="object_0_model_name" default="" doc="Gazebo model name of the target object"/>
   <arg name="object_0_frame" default="" doc="TF Frame name of target"/>
@@ -33,30 +33,30 @@
   <group unless="$(arg real_robot)">
     <!-- Robot Base position -->
     <arg name="x" default="0.0" doc="base_link coordinate with respect to the world frame"/>
-    <arg name="y" default="-0.7" doc="base_link coordinate with respect to the world frame"/>
-    <arg name="z" default="0.75" doc="base_link coordinate with respect to the world frame"/>
+    <arg name="y" default="0.0" doc="base_link coordinate with respect to the world frame"/>
+    <arg name="z" default="0.55" doc="base_link coordinate with respect to the world frame"/>
     <arg name="roll" default="0.0" doc="base_link coordinate with respect to the world frame"/>
     <arg name="pitch" default="0.0" doc="base_link coordinate with respect to the world frame"/>
     <arg name="yaw" default="0.0" doc="base_link coordinate with respect to the world frame"/>
 
     <!--Robot description and related parameter files -->
     <arg name="robot_description_file" default="$(dirname)/inc/load_$(arg ur_model).launch.xml" doc="Launch file which populates the 'robot_description' parameter."/>
-    <!-- <arg name="joint_limit_params" default="$(find ur_description)/config/$(arg ur_model)/joint_limits.yaml"/>
+    <arg name="joint_limit_params" default="$(find ur_description)/config/$(arg ur_model)/joint_limits.yaml"/>
     <arg name="kinematics_params" default="$(find ur_description)/config/$(arg ur_model)/default_kinematics.yaml"/>
     <arg name="physical_params" default="$(find ur_description)/config/$(arg ur_model)/physical_parameters.yaml"/>
-    <arg name="visual_params" default="$(find ur_description)/config/$(arg ur_model)/visual_parameters.yaml"/> -->
+    <arg name="visual_params" default="$(find ur_description)/config/$(arg ur_model)/visual_parameters.yaml"/>
 
     <!-- Controller configuration -->
-    <arg name="controller_config_file" default="$(find ur_robot_server)/config/$(arg ur_model)_controllers.yaml" doc="Config file used for defining the ROS-Control controllers."/>
+    <arg name="controller_config_file" default="$(find ur_robot_server)/config/control_test.yaml" doc="Config file used for defining the ROS-Control controllers."/>
     <arg name="controllers" default="joint_state_controller eff_joint_traj_controller" doc="Controllers that are activated by default."/>
     <arg name="stopped_controllers" default="joint_group_eff_controller" doc="Controllers that are initally loaded, but not started."/>
 
     <!-- Load urdf on the parameter server -->
     <include file="$(arg robot_description_file)">
-      <!-- <arg name="joint_limit_params" value="$(arg joint_limit_params)"/>
+      <arg name="joint_limit_params" value="$(arg joint_limit_params)"/>
       <arg name="kinematics_params" value="$(arg kinematics_params)"/>
       <arg name="physical_params" value="$(arg physical_params)"/>
-      <arg name="visual_params" value="$(arg visual_params)"/> -->
+      <arg name="visual_params" value="$(arg visual_params)"/>
       <arg name="x" value="$(arg x)"/>
       <arg name="y" value="$(arg y)"/>
       <arg name="z" value="$(arg z)"/>
@@ -88,13 +88,6 @@
     <param name="action_cycle_rate" value="$(arg action_cycle_rate)"></param>
   </node>
 
-
-  <!--Launch Darknet ros-->
-  <!-- <include file="$(find darknet_ros)/launch/darknet_ros.launch"> -->
-  <!-- </include>  -->
-
-  <!--object tracker-->
-  <!-- <node name="object_tracker" pkg="object_tracker" type="object_tracker_py3.py" output="screen"/> -->
 
   <!-- Launch RViz -->
   <node if="$(eval arg('gui') and arg('rviz_gui'))" name="$(anon rviz)" pkg="rviz" type="rviz" respawn="false"

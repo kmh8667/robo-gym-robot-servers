@@ -30,6 +30,8 @@
           xacro macro (which is hosted by ur_description).
   -->
   <xacro:include filename="$(find ur_robot_server)/urdf/ur_macro.xacro"/>
+  <!-- <xacro:include filename="$(find husky_ur3_gazebo)/urdf/rh_p12_rn_gripper.xacro" /> -->
+  <!-- <xacro:include filename="$(find husky_ur3_gazebo)/urdf/accessories/d435_camera_g.urdf.xacro" /> -->
 
   <!--Declare arguments -->
   <xacro:arg name="joint_limit_params" default=""/>
@@ -93,6 +95,18 @@
     <child link="base_link"/>
     <origin xyz="$(arg x) $(arg y) $(arg z)" rpy="$(arg roll) $(arg pitch) $(arg yaw)" />
   </joint>
+
+
+
+  <!-- <joint name="ur3_gripper_joint" type="fixed">
+    <parent link="ee_link" />
+    <child link = "rh_p12_rn_base" />
+        <origin xyz="0 0 0.03" rpy="0 0 0"/>
+  </joint> -->
+<!-- 
+  <xacro:g_sensor_d435 parent="ee_link">
+    <origin xyz="0.05 0.00 0.00" rpy="0 -1.57 ${pi}"/>
+  </xacro:g_sensor_d435> -->
 
   <!-- simulated rgbd camera include -->
   <xacro:if value="$(arg camera1_gazebo)">

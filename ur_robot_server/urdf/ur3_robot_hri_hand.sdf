@@ -1,0 +1,631 @@
+<sdf version='1.7'>
+  <model name='ur3'>
+    <joint name='world_joint' type='fixed'>
+      <pose relative_to='__model__'>0 -0.7 0.75 0 -0 0</pose>
+      <parent>world</parent>
+      <child>base_link</child>
+    </joint>
+    <link name='base_link'>
+      <pose relative_to='world_joint'>0 0 0 0 -0 0</pose>
+      <inertial>
+        <pose>0 0 0 0 -0 0</pose>
+        <mass>2</mass>
+        <inertia>
+          <ixx>0.00305317</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.00305317</iyy>
+          <iyz>0</iyz>
+          <izz>0.005625</izz>
+        </inertia>
+      </inertial>
+      <collision name='base_link_collision'>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://husky_ur3_gazebo/meshes/ur3/collision/base.stl</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name='base_link_visual'>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://husky_ur3_gazebo/meshes/ur3/visual/base.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name='shoulder_pan_joint' type='revolute'>
+      <pose relative_to='base_link'>0 0 0.1519 0 -0 0</pose>
+      <parent>base_link</parent>
+      <child>shoulder_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-3.14159</lower>
+          <upper>3.14159</upper>
+          <effort>330</effort>
+          <velocity>2.16</velocity>
+        </limit>
+        <dynamics>
+          <damping>0</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name='shoulder_link'>
+      <pose relative_to='shoulder_pan_joint'>0 0 0 0 -0 0</pose>
+      <inertial>
+        <pose>0 0 0 0 -0 0</pose>
+        <mass>2</mass>
+        <inertia>
+          <ixx>0.00809316</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.00809316</iyy>
+          <iyz>0</iyz>
+          <izz>0.005625</izz>
+        </inertia>
+      </inertial>
+      <collision name='shoulder_link_collision'>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://husky_ur3_gazebo/meshes/ur3/collision/shoulder.stl</uri>
+          </mesh>
+        </geometry>
+        <surface>
+          <contact>
+            <ode/>
+          </contact>
+          <friction>
+            <ode/>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='shoulder_link_visual'>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://husky_ur3_gazebo/meshes/ur3/visual/shoulder.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <self_collide>1</self_collide>
+      <sensor name='shoulder_link_contact' type='contact'>
+        <update_rate>50</update_rate>
+        <always_on>1</always_on>
+        <contact>
+          <collision>shoulder_link_collision</collision>
+          <topic>__default_topic__</topic>
+        </contact>
+        <plugin name='ros_bumper_0' filename='libgazebo_ros_bumper.so'>
+          <bumperTopicName>shoulder_collision</bumperTopicName>
+          <frameName>shoulder_link</frameName>
+        </plugin>
+      </sensor>
+    </link>
+    <joint name='shoulder_lift_joint' type='revolute'>
+      <pose relative_to='shoulder_link'>0 0.1198 0 0 1.5708 0</pose>
+      <parent>shoulder_link</parent>
+      <child>upper_arm_link</child>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit>
+          <lower>-3.14159</lower>
+          <upper>3.14159</upper>
+          <effort>330</effort>
+          <velocity>2.16</velocity>
+        </limit>
+        <dynamics>
+          <damping>0</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name='upper_arm_link'>
+      <pose relative_to='shoulder_lift_joint'>0 0 0 0 -0 0</pose>
+      <inertial>
+        <pose>0 0 0.121825 0 -0 0</pose>
+        <mass>3.42</mass>
+        <inertia>
+          <ixx>0.0217285</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.0217285</iyy>
+          <iyz>0</iyz>
+          <izz>0.00961875</izz>
+        </inertia>
+      </inertial>
+      <collision name='upper_arm_link_collision'>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://husky_ur3_gazebo/meshes/ur3/collision/upperarm.stl</uri>
+          </mesh>
+        </geometry>
+        <surface>
+          <contact>
+            <ode/>
+          </contact>
+          <friction>
+            <ode/>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='upper_arm_link_visual'>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://husky_ur3_gazebo/meshes/ur3/visual/upperarm.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <self_collide>1</self_collide>
+      <sensor name='upper_arm_link_contact' type='contact'>
+        <update_rate>50</update_rate>
+        <always_on>1</always_on>
+        <contact>
+          <collision>upper_arm_link_collision</collision>
+          <topic>__default_topic__</topic>
+        </contact>
+        <plugin name='ros_bumper_1' filename='libgazebo_ros_bumper.so'>
+          <bumperTopicName>upper_arm_collision</bumperTopicName>
+          <frameName>upper_arm_link</frameName>
+        </plugin>
+      </sensor>
+    </link>
+    <joint name='elbow_joint' type='revolute'>
+      <pose relative_to='upper_arm_link'>0 -0.0925 0.24365 0 -0 0</pose>
+      <parent>upper_arm_link</parent>
+      <child>forearm_link</child>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit>
+          <lower>-2.618</lower>
+          <upper>3.14159</upper>
+          <effort>150</effort>
+          <velocity>3.15</velocity>
+        </limit>
+        <dynamics>
+          <damping>0</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name='forearm_link'>
+      <pose relative_to='elbow_joint'>0 0 0 0 -0 0</pose>
+      <inertial>
+        <pose>0 0 0.106625 0 -0 0</pose>
+        <mass>1.26</mass>
+        <inertia>
+          <ixx>0.00654681</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.00654681</iyy>
+          <iyz>0</iyz>
+          <izz>0.00354375</izz>
+        </inertia>
+      </inertial>
+      <collision name='forearm_link_collision'>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://husky_ur3_gazebo/meshes/ur3/collision/forearm.stl</uri>
+          </mesh>
+        </geometry>
+        <surface>
+          <contact>
+            <ode/>
+          </contact>
+          <friction>
+            <ode/>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='forearm_link_visual'>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://husky_ur3_gazebo/meshes/ur3/visual/forearm.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <self_collide>1</self_collide>
+      <sensor name='forearm_link_contact' type='contact'>
+        <update_rate>50</update_rate>
+        <always_on>1</always_on>
+        <contact>
+          <collision>forearm_link_collision</collision>
+          <topic>__default_topic__</topic>
+        </contact>
+        <plugin name='ros_bumper_2' filename='libgazebo_ros_bumper.so'>
+          <bumperTopicName>forearm_collision</bumperTopicName>
+          <frameName>forearm_link</frameName>
+        </plugin>
+      </sensor>
+    </link>
+    <joint name='wrist_1_joint' type='revolute'>
+      <pose relative_to='forearm_link'>0 0 0.21325 0 1.5708 0</pose>
+      <parent>forearm_link</parent>
+      <child>wrist_1_link</child>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit>
+          <lower>-3.14159</lower>
+          <upper>3.14159</upper>
+          <effort>54</effort>
+          <velocity>3.2</velocity>
+        </limit>
+        <dynamics>
+          <damping>0</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name='wrist_1_link'>
+      <pose relative_to='wrist_1_joint'>0 0 0 0 -0 0</pose>
+      <inertial>
+        <pose>0 0.08505 0 0 -0 0</pose>
+        <mass>0.8</mass>
+        <inertia>
+          <ixx>0.002085</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.002085</iyy>
+          <iyz>0</iyz>
+          <izz>0.00225</izz>
+        </inertia>
+      </inertial>
+      <collision name='wrist_1_link_collision'>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://husky_ur3_gazebo/meshes/ur3/collision/wrist1.stl</uri>
+          </mesh>
+        </geometry>
+        <surface>
+          <contact>
+            <ode/>
+          </contact>
+          <friction>
+            <ode/>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='wrist_1_link_visual'>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://husky_ur3_gazebo/meshes/ur3/visual/wrist1.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <self_collide>1</self_collide>
+      <sensor name='wrist_1_link_contact' type='contact'>
+        <update_rate>50</update_rate>
+        <always_on>1</always_on>
+        <contact>
+          <collision>wrist_1_link_collision</collision>
+          <topic>__default_topic__</topic>
+        </contact>
+        <plugin name='ros_bumper_3' filename='libgazebo_ros_bumper.so'>
+          <bumperTopicName>wrist_1_collision</bumperTopicName>
+          <frameName>wrist_1_link</frameName>
+        </plugin>
+      </sensor>
+    </link>
+    <joint name='wrist_2_joint' type='revolute'>
+      <pose relative_to='wrist_1_link'>0 0.08505 0 0 -0 0</pose>
+      <parent>wrist_1_link</parent>
+      <child>wrist_2_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-3.14159</lower>
+          <upper>3.14159</upper>
+          <effort>54</effort>
+          <velocity>3.2</velocity>
+        </limit>
+        <dynamics>
+          <damping>0</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name='wrist_2_link'>
+      <pose relative_to='wrist_2_joint'>0 0 0 0 -0 0</pose>
+      <inertial>
+        <pose>0 0 0.08535 0 -0 0</pose>
+        <mass>0.8</mass>
+        <inertia>
+          <ixx>0.002085</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.002085</iyy>
+          <iyz>0</iyz>
+          <izz>0.00225</izz>
+        </inertia>
+      </inertial>
+      <collision name='wrist_2_link_collision'>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://husky_ur3_gazebo/meshes/ur3/collision/wrist2.stl</uri>
+          </mesh>
+        </geometry>
+        <surface>
+          <contact>
+            <ode/>
+          </contact>
+          <friction>
+            <ode/>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='wrist_2_link_visual'>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://husky_ur3_gazebo/meshes/ur3/visual/wrist2.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <self_collide>1</self_collide>
+      <sensor name='wrist_2_link_contact' type='contact'>
+        <update_rate>50</update_rate>
+        <always_on>1</always_on>
+        <contact>
+          <collision>wrist_2_link_collision</collision>
+          <topic>__default_topic__</topic>
+        </contact>
+        <plugin name='ros_bumper_4' filename='libgazebo_ros_bumper.so'>
+          <bumperTopicName>wrist_2_collision</bumperTopicName>
+          <frameName>wrist_2_link</frameName>
+        </plugin>
+      </sensor>
+    </link>
+    <joint name='wrist_3_joint' type='revolute'>
+      <pose relative_to='wrist_2_link'>0 0 0.08535 0 -0 0</pose>
+      <parent>wrist_2_link</parent>
+      <child>wrist_3_link</child>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit>
+          <lower>-3.14159</lower>
+          <upper>3.14159</upper>
+          <effort>54</effort>
+          <velocity>3.2</velocity>
+        </limit>
+        <dynamics>
+          <damping>0</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name='wrist_3_link'>
+      <pose relative_to='wrist_3_joint'>0 0 0 0 -0 0</pose>
+      <inertial>
+        <pose>-0.001745 0.073262 0.008227 1.5708 -0 0</pose>
+        <mass>0.722</mass>
+        <inertia>
+          <ixx>0.101171</ixx>
+          <ixy>9.35838e-05</ixy>
+          <ixz>-2.42402e-05</ixz>
+          <iyy>0.10413</iyy>
+          <iyz>0.000114275</iyz>
+          <izz>0.104521</izz>
+        </inertia>
+      </inertial>
+      <collision name='wrist_3_link_collision'>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://husky_ur3_gazebo/meshes/ur3/collision/wrist3.stl</uri>
+          </mesh>
+        </geometry>
+        <surface>
+          <contact>
+            <ode/>
+          </contact>
+          <friction>
+            <ode/>
+          </friction>
+        </surface>
+      </collision>
+      <collision name='wrist_3_link_fixed_joint_lump__gripper_link_collision_1'>
+        <pose>0 0.1969 -0.008 3.14159 0 3.14159</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://husky_ur3_gazebo/meshes/hri_hand.stl</uri>
+          </mesh>
+        </geometry>
+        <surface>
+          <contact>
+            <ode/>
+          </contact>
+          <friction>
+            <ode/>
+          </friction>
+        </surface>
+      </collision>
+      <collision name='wrist_3_link_fixed_joint_lump__g_camera_link_collision_2'>
+        <pose>-0 0.0925 0.0825 -0 0 1.5708</pose>
+        <geometry>
+          <box>
+            <size>0.02505 0.09 0.025</size>
+          </box>
+        </geometry>
+        <surface>
+          <contact>
+            <ode/>
+          </contact>
+          <friction>
+            <ode/>
+          </friction>
+        </surface>
+      </collision>
+      <collision name='wrist_3_link_fixed_joint_lump__grip_point_collision_3'>
+        <pose>0 0.2669 -0.015 -1.5708 1.5708 0</pose>
+        <geometry>
+          <box>
+            <size>0.01 0.05 0.03</size>
+          </box>
+        </geometry>
+        <surface>
+          <contact>
+            <ode/>
+          </contact>
+          <friction>
+            <ode/>
+          </friction>
+        </surface>
+      </collision>
+      <visual name='wrist_3_link_visual'>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://husky_ur3_gazebo/meshes/ur3/visual/wrist3.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <visual name='wrist_3_link_fixed_joint_lump__gripper_link_visual_1'>
+        <pose>0 0.1969 -0.008 -0 -0 -0</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://husky_ur3_gazebo/meshes/hri_hand.stl</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <visual name='wrist_3_link_fixed_joint_lump__g_camera_link_visual_2'>
+        <pose>-0 0.0968 0.0825 1.5708 0 3.14159</pose>
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>model://realsense2_description/meshes/d435.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <visual name='wrist_3_link_fixed_joint_lump__grip_point_visual_3'>
+        <pose>0 0.2669 -0.015 -1.5708 1.5708 0</pose>
+        <geometry>
+          <box>
+            <size>0.01 0.05 0.03</size>
+          </box>
+        </geometry>
+      </visual>
+      <sensor name='wrist_3_link_contact' type='contact'>
+        <update_rate>50</update_rate>
+        <always_on>1</always_on>
+        <contact>
+          <collision>wrist_3_link_collision</collision>
+          <topic>__default_topic__</topic>
+        </contact>
+        <plugin name='ros_bumper_5' filename='libgazebo_ros_bumper.so'>
+          <bumperTopicName>wrist_3_collision</bumperTopicName>
+          <frameName>wrist_3_link</frameName>
+        </plugin>
+      </sensor>
+      <self_collide>1</self_collide>
+      <sensor name='gripper_link_contact' type='contact'>
+        <update_rate>50</update_rate>
+        <always_on>1</always_on>
+        <contact>
+          <collision>wrist_3_link_collision_gripper_link</collision>
+          <topic>__default_topic__</topic>
+        </contact>
+        <plugin name='ros_bumper_6' filename='libgazebo_ros_bumper.so'>
+          <bumperTopicName>gripper_link_collision</bumperTopicName>
+          <frameName>gripper_link_collision</frameName>
+        </plugin>
+        <pose>0 0.0819 0 3.14159 1.57079 -1.57079</pose>
+      </sensor>
+      <sensor name='g_camera' type='depth'>
+        <always_on>1</always_on>
+        <visualize>1</visualize>
+        <camera>
+          <horizontal_fov>1.0472</horizontal_fov>
+          <image>
+            <width>640</width>
+            <height>480</height>
+            <format>R8G8B8</format>
+          </image>
+          <depth_camera>
+            <output>depths</output>
+          </depth_camera>
+          <clip>
+            <near>0.11</near>
+            <far>10</far>
+          </clip>
+        </camera>
+        <plugin name='g_camera_controller' filename='libgazebo_ros_openni_kinect.so'>
+          <alwaysOn>1</alwaysOn>
+          <updateRate>20.0</updateRate>
+          <cameraName>g_d435</cameraName>
+          <frameName>g_camera_depth_optical_frame</frameName>
+          <imageTopicName>rgb/g_image_raw</imageTopicName>
+          <depthImageTopicName>depth/g_image_raw</depthImageTopicName>
+          <pointCloudTopicName>depth/g_points</pointCloudTopicName>
+          <cameraInfoTopicName>rgb/camera_info</cameraInfoTopicName>
+          <depthImageCameraInfoTopicName>depth/camera_info</depthImageCameraInfoTopicName>
+          <pointCloudCutoff>0.4</pointCloudCutoff>
+          <hackBaseline>0.07</hackBaseline>
+          <distortionK1>0.0</distortionK1>
+          <distortionK2>0.0</distortionK2>
+          <distortionK3>0.0</distortionK3>
+          <distortionT1>0.0</distortionT1>
+          <distortionT2>0.0</distortionT2>
+          <CxPrime>0.0</CxPrime>
+          <Cx>0.0</Cx>
+          <Cy>0.0</Cy>
+          <focalLength>0.0</focalLength>
+        </plugin>
+        <pose>-0.0175 0.0925 0.0825 -0 0 1.5708</pose>
+      </sensor>
+      <sensor name='grip_point_contact' type='contact'>
+        <update_rate>50</update_rate>
+        <always_on>1</always_on>
+        <contact>
+          <collision>gripper_link_collision_grip_point</collision>
+          <topic>__default_topic__</topic>
+        </contact>
+        <plugin name='ros_bumper_7' filename='libgazebo_ros_bumper.so'>
+          <bumperTopicName>grip_point_collision</bumperTopicName>
+          <frameName>grip_point_collision</frameName>
+        </plugin>
+        <pose>0 0.2669 -0.015 3.14159 1.57079 -1.57079</pose>
+      </sensor>
+    </link>
+    <static>0</static>
+    <plugin name='ros_control' filename='libgazebo_ros_control.so'/>
+  </model>
+</sdf>

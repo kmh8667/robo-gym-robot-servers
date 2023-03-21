@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+
+<launch>
+
+  <node name="object_pose_publisher" pkg="ur_robot_server" type="object_publisher.py" respawn="false" output="screen" >
+  </node>
+
+</launch>

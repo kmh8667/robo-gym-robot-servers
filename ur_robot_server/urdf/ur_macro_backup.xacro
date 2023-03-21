@@ -56,9 +56,8 @@
       NOTE: this imports the '_macro.xacro' from ur_description, as that contains
       the definitions for the real robot.
     -->
-    <xacro:include filename="$(find ur_robot_server)/urdf/ur_description.xacro"/>
-    <!-- <xacro:include filename="$(find husky_ur3_gazebo)/urdf/rh_p12_rn_gripper.xacro" /> -->
-    <xacro:include filename="$(find husky_ur3_gazebo)/urdf/accessories/d435_camera_g.urdf.xacro" />
+    <xacro:include filename="$(find ur_description)/urdf/ur_macro.xacro"/>
+
 
     <!-- Instantiate model for the REAL robot. -->
     <xacro:ur_robot
@@ -72,17 +71,6 @@
       safety_pos_margin="${safety_pos_margin}"
       safety_k_position="${safety_k_position}"
     />
-    <!-- 
-    <joint name="ur3_gripper_joint" type="fixed">
-      <parent link="ee_link" />
-      <child link = "rh_p12_rn_base" />
-          <origin xyz="0 0 0" rpy="0 0 0"/>
-    </joint> -->
-
-    <xacro:g_sensor_d435 parent="wrist_3_link">
-      <origin xyz="0.0 -0.07 0.00" rpy="0 ${-pi/2} ${pi/2}"/>
-    </xacro:g_sensor_d435>
-    
 
     <!-- Configure self collision properties per link -->
     <gazebo reference="${prefix}shoulder_link">
@@ -200,36 +188,6 @@
             <bumperTopicName>${prefix}wrist_3_collision</bumperTopicName>
             <frameName>${prefix}wrist_3_link</frameName>
          </plugin>
-      </sensor>
-    </gazebo>
-
-    <!--add virtual contact sensor-->
-    <gazebo reference="${prefix}gripper_link">
-      <sensor name="${prefix}gripper_link_contact" type="contact">
-        <update_rate> 50 </update_rate>
-        <always_on>true</always_on>
-        <contact>
-          <collision>${prefix}gripper_link_collision</collision>
-        </contact>
-        <plugin filename="libgazebo_ros_bumper.so" name="ros_bumper_6">
-          <bumperTopicName>${prefix}gripper_link_collision</bumperTopicName>
-          <frameName>${prefix}gripper_link_collision</frameName>
-        </plugin>
-      </sensor>
-    </gazebo>
-  
-    
-    <gazebo reference="${prefix}grip_point">
-      <sensor name="${prefix}grip_point_contact" type="contact">
-        <update_rate> 50 </update_rate>
-        <always_on>true</always_on>
-        <contact>
-          <collision>${prefix}grip_point_collision</collision>
-        </contact>
-        <plugin filename="libgazebo_ros_bumper.so" name="ros_bumper_7">
-          <bumperTopicName>${prefix}grip_point_collision</bumperTopicName>
-          <frameName>${prefix}grip_point_collision</frameName>
-        </plugin>
       </sensor>
     </gazebo>
   </xacro:macro>
